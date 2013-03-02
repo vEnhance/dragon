@@ -1,0 +1,13 @@
+                                          
+ mmmm                                     
+ #   "m  m mm   mmm    mmmm   mmm   m mm  
+ #    #  #"  " "   #  #" "#  #" "#  #"  # 
+ #    #  #     m"""#  #   #  #   #  #   # 
+ #mmm"   #     "mm"#  "#m"#  "#m#"  #   # 
+                       m  #               
+                        ""                
+=============================================
+
+Dragon is a utility for converting GeoGebra diagram to an Asymptote diagram.  The conversion is intended to be symbolic.
+
+Call as a module.
