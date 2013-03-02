@@ -9,5 +9,7 @@
 =============================================
 
 Dragon is a utility for converting GeoGebra diagram to an Asymptote diagram.  The conversion is intended to be symbolic.
-
 Call as a module.
+
+After saving all the files in a folder, invoke with
+python -m dragon <filename>.ggb
