@@ -180,5 +180,5 @@ if __name__ == "__main__":
 	if opts['CLIP_IMG'] == 0:
 		print drawDiagram(theMainDiagram, label_dict, opts=opts).replace(u"\u03B1", "alpha")
 	else:
-		print drawDiagram(theMainDiagram, label_dict, view, opts=opts).replace(u"\u03B1", "alpha")
+		print drawDiagram(theMainDiagram, label_dict, view=view, opts=opts).replace(u"\u03B1", "alpha")
 
