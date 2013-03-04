@@ -38,7 +38,7 @@ parser.add_argument('--labelscale',
 		action = "store",
 		dest = "LABEL_SCALE_FACTOR",
 		metavar = "FACTOR",
-		default = 0.4,
+		default = 0.8,
 		help = "Defines the constant LSF which is used when labelling points.  This is 0.4 by default."
 		)
 parser.add_argument('--fontsize',
