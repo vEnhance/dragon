@@ -288,6 +288,7 @@ def drawDiagram(diagram, label_locations = {}, opts = {}, view = None):
 	else:
 		dotCmd = "D"
 		drawCmd = "D"
+	dots_code = ""
 	#Main loop
 	for label in diagram.objectList:
 		curr_obj = diagram[label]
@@ -300,8 +301,8 @@ def drawDiagram(diagram, label_locations = {}, opts = {}, view = None):
 		else:
 			#Figure out how to draw depending on whether path, pair, or other type.
 			if curr_obj.asy_obj_type == "pair":
-				out_asy_code += "%s(%s);" %(dotCmd, obj_repr)
-				out_asy_code += "\n" if CONCISE_MODE == 0 else " "
+				dots_code += "%s(%s);" %(dotCmd, obj_repr)
+				dots_code += "\n" if CONCISE_MODE == 0 else " "
 			elif curr_obj.asy_obj_type == "path":
 				if not curr_obj.needs_pen:
 					out_asy_code += "%s(%s);" %(drawCmd, obj_repr)
@@ -323,7 +324,11 @@ def drawDiagram(diagram, label_locations = {}, opts = {}, view = None):
 				print "Dying..."
 				exit()
 	
-
+	# Dot points
+	if CONCISE_MODE == 0:
+		out_asy_code += "\n/* Place dots on each point */\n"
+	out_asy_code += dots_code
+	
 	#Setup label commands.
 	if CSE_MODE == 0 and CONCISE_MODE == 0:
 		label_cmd_name = "label"
