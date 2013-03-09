@@ -100,7 +100,8 @@ def doCompileDiagramObjects(tree, diagram):
 				print ggb_command
 				print cmd_output_obj
 				exit()
-
+			
+			# Add dependencies
 			for label in deps:
 				if diagram.has_key(label):
 					diagram[label].depend += 1
@@ -116,10 +117,15 @@ def doCompileDiagramObjects(tree, diagram):
 				# This is text.
 				parsedExp = exp
 			else:
-				parsedExp = ggb_parser.parse_string(exp, num_expected=1, ref_dict = diagram.objectDict)[0]
+				parsedExp, deps = ggb_parser.parse_string(exp, num_expected=1, ref_dict = diagram.objectDict)
 			diagram[label] = GGBObject(constructor = parsedExp, label=label)
-			diagram[label].depend += 1
-			#^ Explicitly defined reals are almost always dependencies: this program isn't exactly bug free.
+			diagram[label].depend += 1 #Explicitly defined reals are almost always dependencies; good to be safe here
+			# Add dependencies for expressions too!
+			for label in deps:
+				if diagram.has_key(label):
+					diagram[label].depend += 1
+				else:
+					print "/* WARNING: No object has label %s */" %label
 
 		elif xml_geo_obj.tag == "element":
 			ggb_type = xml_geo_obj.attrib['type']	
@@ -174,38 +180,38 @@ def doCompileDiagramObjects(tree, diagram):
 
 			#OK, attributes now...
 			if xml_geo_obj.find("show") == None:
-				#lol no show?
-				#Moving on...
-				continue
+				# No show... ignoring.
+				pass
 
-			if xml_geo_obj.find("show").attrib["object"] == "true":
-				diagram[label].visible = 1
-				if asy_type == "path":
-					colorArray = []
-					for c in 'rgb':
-						colorArray.append(int(xml_geo_obj.find("objColor").attrib[c])/256.0)
-					thick = int(xml_geo_obj.find("lineStyle").attrib["thickness"])
-					style = int(xml_geo_obj.find("lineStyle").attrib["type"])
-
-					if sum(colorArray) > 0:
-						diagram[label].color = 'rgb(%.1f,%.1f,%.1f)' %tuple(colorArray)
-						diagram[label].needs_pen = 1
-					if thick != 2:
-						diagram[label].thick = 'linewidth(%s)' %LINE_WT[thick]
-						diagram[label].needs_pen = 1
-					if style != 0:
-						diagram[label].style = LINE_STYLE[style]
-						diagram[label].needs_pen = 1
-				#Paths are pretty configurable ._.
 			else:
-				diagram[label].visible = 0
+				if xml_geo_obj.find("show").attrib["object"] == "true":
+					diagram[label].visible = 1
+					if asy_type == "path":
+						colorArray = []
+						for c in 'rgb':
+							colorArray.append(int(xml_geo_obj.find("objColor").attrib[c])/256.0)
+						thick = int(xml_geo_obj.find("lineStyle").attrib["thickness"])
+						style = int(xml_geo_obj.find("lineStyle").attrib["type"])
 
-			if xml_geo_obj.find("show").attrib["label"] == "true" and diagram[label].visible == 1 and diagram[label].ggb_obj_type != "angle":
-				diagram.toLabelList.append(label)
-				diagram[label].needs_label = 1
-				diagram[label].depend += 1
+						if sum(colorArray) > 0:
+							diagram[label].color = 'rgb(%.1f,%.1f,%.1f)' %tuple(colorArray)
+							diagram[label].needs_pen = 1
+						if thick != 2:
+							diagram[label].thick = 'linewidth(%s)' %LINE_WT[thick]
+							diagram[label].needs_pen = 1
+						if style != 0:
+							diagram[label].style = LINE_STYLE[style]
+							diagram[label].needs_pen = 1
+					#Paths are pretty configurable ._.
+				else:
+					diagram[label].visible = 0
 
-			diagram[label].label = label
+				# Determine which objects need labelling
+				if xml_geo_obj.find("show").attrib["label"] == "true" and diagram[label].visible == 1 and diagram[label].ggb_obj_type != "angle":
+					diagram.toLabelList.append(label)
+					diagram[label].needs_label = 1
+					diagram[label].depend += 1
+					diagram[label].label = label
 
 
 		else:
@@ -291,6 +297,7 @@ def drawDiagram(diagram, label_locations = {}, opts = {}, view = None):
 	dots_code = ""
 	#Main loop
 	for label in diagram.objectList:
+		if label == "": continue
 		curr_obj = diagram[label]
 		if curr_obj.depend < DEPEND_THRESHOLD:
 			obj_repr = curr_obj.constructor # If object wasn't declared earlier

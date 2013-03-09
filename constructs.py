@@ -238,7 +238,7 @@ def Mirror(*args, **kwargs):
 		return "2*%s-%s" %(foot, first)
 def return_first_type(*args, **kwargs):
 	return kwargs["args_types"][0]
-Mirror.ggb_return_type = "return_first_type"
+Mirror.ggb_return_type = return_first_type
 		
 
 def Incircle(*args, **kwargs): return aux_get_cmd("incircle", args, 3,3)

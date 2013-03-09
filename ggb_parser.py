@@ -169,27 +169,32 @@ def ShuntingYard(string_tokens, **kwargs):
 	return [outputQueue, deps]
 
 def parse_string(s, **kwargs):
+	# Get token set and dependencies
 	token_set, deps = ShuntingYard(get_tokens_from_string(s), **kwargs)
 	stack = []
 
+	# Process an Reverse-Polish token_set
 	for token in token_set:
 		if token.token_type == "object":
+			# Token is an object, push it to stack
 			stack.append(token)
 		elif token.token_type == "function":
+			# Get arguments by pushing from the stack
 			args_token = reversed([stack.pop() for t in range(token.number_args)])
 			args_string = []
 			args_types = []
+			# Get the corresponding types
 			for arg in args_token:
 				args_string.append(arg.constructor)
 				args_types.append(arg.ggb_type)
-			curr_func = getattr(module_constructs, token.name)
-			res_constructor = curr_func(*args_string, args_types = args_types, **kwargs)
+			curr_func = getattr(module_constructs, token.name) # Get a function from the module
+			res_constructor = curr_func(*args_string, args_types = args_types, **kwargs) # Get GGB constructor
 			if token.function_type == "prefix":
-				theType = curr_func.ggb_return_type
-				if type(theType) == STRING_TYPE:
-					res_type = theType
-				else:
-					res_type = theType(*args_string, args_types = args_types, **kwargs)
+				the_return_type = curr_func.ggb_return_type # For functions, there is a definite return type
+				if type(the_return_type) == STRING_TYPE: # if the_return_type is a static string
+					res_type = the_return_type
+				else: # otherwise, it is a dynamic function
+					res_type = the_return_type(*args_string, args_types = args_types, **kwargs)
 			else:
 				#QQ
 				assert len(args_types) == 2, "Infix called with num arguments %s" %str(args_types)
