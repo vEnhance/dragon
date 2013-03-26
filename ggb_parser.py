@@ -86,8 +86,8 @@ def get_tokens_from_string(s):
 def ShuntingYard(string_tokens, **kwargs):
 	"""Converts a prefix/infix string expression into a list of instances 'Token'
 	sorted in Reverse Polish notation.
-	Return value: [list[tokens] of tokens, list[label] of dependencies]"""
-	outputQueue = []
+	Return value: [list (elements are tokens) of tokens, list (elements are labels) of dependencies]"""
+	output_queue = []
 	stack = []
 	deps = []
 	function_nargs_tracker = []
@@ -101,13 +101,13 @@ def ShuntingYard(string_tokens, **kwargs):
 		elif string_token in ")]":
 			while stack[-1].token_type != "(":
 				assert stack[-1].token_type == "function", stack[-1]
-				outputQueue.append(stack.pop())
+				output_queue.append(stack.pop())
 			stack.pop() #Remove the left paren
 			if len(stack) > 0:
 				if stack[-1].token_type == "function":
 					if stack[-1].function_type == "prefix":
-						outputQueue.append(stack.pop())
-						outputQueue[-1].number_args = function_nargs_tracker.pop()
+						output_queue.append(stack.pop())
+						output_queue[-1].number_args = function_nargs_tracker.pop()
 
 		elif string_token in ",":
 			#Separator
@@ -115,7 +115,7 @@ def ShuntingYard(string_tokens, **kwargs):
 				stack_top = stack.pop()
 				assert stack_top.token_type == "function", "%s is not a function" %stack_top
 				assert stack_top.function_type == "infix", "%s is not infix" %stack_top
-				outputQueue.append(stack_top)
+				output_queue.append(stack_top)
 			function_nargs_tracker[-1] += 1
 			
 		elif isFunc(string_token):
@@ -130,43 +130,53 @@ def ShuntingYard(string_tokens, **kwargs):
 			if len(stack) > 0:
 				while stack[-1].token_type == "function":
 					if stack[-1].function_type == "infix" and curr_rps_token.prec <= stack[-1].prec:
-						outputQueue.append(stack.pop())
+						output_queue.append(stack.pop())
 					else:
 						break
 					if len(stack) <= 0: break
 			stack.append(curr_rps_token)
 
-		elif any( [char in string.ascii_letters + "_ " for char in string_token] ):
-			#This is a varname
+		elif any( [char in (string.ascii_letters + "_ ") for char in string_token] ):
+			#This is a varname because it contains at least an alphanum
 			deps.append(string_token)
 
 			#curr_ggb_type = "point"
 			if not kwargs['ref_dict'].has_key(string_token):
 				print "FATAL ERROR"
 				print "\"%s\" is neither a recorded GGB command or the name of a previous object." %string_token
+				print "Tokens:", string_tokens
 				print "You are on your own.  Good luck."
 				exit()
 
 			curr_ggb_type = kwargs['ref_dict'][string_token].ggb_obj_type
 
 			curr_rps_token = RPSObject(ggb_type = curr_ggb_type, constructor = string_token, is_constant = 0, is_in_diagram = 1)
-			outputQueue.append(curr_rps_token)
+			output_queue.append(curr_rps_token)
 
 		elif all( [char in '1234567890. ' for char in string_token] ):
 			#This is a real.
 			curr_rps_token = RPSObject(ggb_type = "numeric", constructor = string_token, is_constant = 1, is_in_diagram = 0)
-			outputQueue.append(curr_rps_token)
+			output_queue.append(curr_rps_token)
+
+		elif string_token == u'\xb0': # This is a degree sign, treat as 1.
+			curr_rps_token = RPSObject(ggb_type = "numeric", constructor = "1", is_constant = 1, is_in_diagram = 0)
+			output_queue.append(curr_rps_token)
 
 		else:
 			#idk
-			raise TypeError, "Dragon's shunting yard doesn't know how to handle token %s" %string_token
+			print "FATAL ERROR"
+			print "\"%s\" is not a recognized token." %string_token
+			print "Tokens:", string_tokens
+			print "You are on your own.  Good luck."
+			exit()
+
 
 	while len(stack) > 0:
 		assert stack[-1].token_type == "function", stack.token_type
 		assert stack[-1].function_type == "infix", stack.token_type
-		outputQueue.append(stack.pop())
+		output_queue.append(stack.pop())
 
-	return [outputQueue, deps]
+	return [output_queue, deps]
 
 def parse_string(s, **kwargs):
 	# Get token set and dependencies
@@ -190,7 +200,7 @@ def parse_string(s, **kwargs):
 			curr_func = getattr(module_constructs, token.name) # Get a function from the module
 			res_constructor = curr_func(*args_string, args_types = args_types, **kwargs) # Get GGB constructor
 			if token.function_type == "prefix":
-				the_return_type = curr_func.ggb_return_type # For functions, there is a definite return type
+				the_return_type = curr_func.ggb_return_type # Each function has a specified return type
 				if type(the_return_type) == STRING_TYPE: # if the_return_type is a static string
 					res_type = the_return_type
 				else: # otherwise, it is a dynamic function

@@ -6,29 +6,6 @@ This can be converted to an asymptote type using the dictionary DICT_ASY_TYPES i
 
 from constants import DICT_ASY_TYPES
 
-name = {}
-name["midpoint"] = "midpoint"
-name["circumcircle"] = "circumcircle"
-name["incircle"] = "incircle"
-name["incenter"] = "incenter"
-name["circumcircle"] = "circumcircle"
-name["circumcenter"] = "circumcenter"
-name["foot"] = "foot"
-name["centroid"] = "centroid"
-name["orthocenter"] = "orthocenter"
-name["bisectorpoint"] = "bisectorpoint"
-name["MarkAngle"] = "anglemark"
-name["MarkRightAngle"] = "rightanglemark"
-name["length"] = "arclength"
-
-name["IntersectionPoint"] = "IntersectionPoint"
-name["IntersectionPoints"] = "IntersectionPoints"
-name["CirclebyPoint"] = "CirclebyPoint"
-name["CirclebyRadius"] = "CirclebyRadius"
-name["Line"] = "Line"
-name["Distance"] = "distance"
-
-
 #Auxiliary functions
 def aux_paren(args):
 	return "(" + ",".join([str(t) for t in args]) + ")"
@@ -37,7 +14,7 @@ def aux_check_sane(args, lmin, lmax):
 def aux_get_cmd(cmdname, args, lmin=None, lmax=None):
 	if lmin is not None and lmax is not None:
 		aux_check_sane(args, lmin, lmax)
-	return name[cmdname] + aux_paren(args)
+	return cmdname + aux_paren(args)
 def aux_op_join(op_symbol, args):
 	return op_symbol.join([str(t) for t in args])
 
@@ -81,12 +58,12 @@ def Center(*args, **kwargs):
 	w = args[0]
 	#Do we really haveee to do this?
 	#Because I sure don't want to.
-	checkBegin = lambda w, center: w[0:len(name[center])] == name[center]
+	checkBegin = lambda w, center: w[0:len(center)] == center # if constructor begins with a "circle" command
 	
-	if checkBegin(w, "incircle"):
-		return name["incenter"] + w[w.find('('):]
-	elif checkBegin(w, "circumcircle"):
-		return name["circumcenter"] + w[w.find('('):]
+	if checkBegin(w, "incircle"): # if is incircle
+		return "incenter" + w[w.find('('):]
+	elif checkBegin(w, "circumcircle"): # if is circumcircle
+		return "circumcenter" + w[w.find('('):]
 	
 	else:
 		#OK, you win.
@@ -132,14 +109,14 @@ def Line(*args, **kwargs):
 		start =	 "relpoint(%s,0.5-10/lisf)" %second
 		end =	 "relpoint(%s,0.5+10/lisf)" %second
 		control = "%s-%s+%s" %(start, end, first)
-		return name["Line"] + aux_paren( [first, control, 'lisf'] )
+		return "Line" + aux_paren( [first, control, 'lisf'] )
 	else:
-		return name["Line"] + aux_paren( [args[0], args[1], 'lisf'] )
+		return "Line" + aux_paren( [args[0], args[1], 'lisf'] )
 Line.ggb_return_type = "line"
 
 def Ray(*args, **kwargs):
 	aux_check_sane(args, 2,2)
-	return name["Line"] + aux_paren( [args[0], args[1], 0, 'lisf'] )
+	return "Line" + aux_paren( [args[0], args[1], 0, 'lisf'] )
 Ray.ggb_return_type = "ray"
 
 
@@ -153,7 +130,7 @@ def AngularBisector(*args, **kwargs):
 
 	else:
 		kwargs['args_types'] = ["point", "point"]
-		return Line(args[1], name["bisectorpoint"] + aux_paren(args), **kwargs)
+		return Line(args[1], "bisectorpoint" + aux_paren(args), **kwargs)
 
 AngularBisector.ggb_return_type = "line"
 
@@ -166,7 +143,7 @@ def LineBisector(*args, **kwargs):
 	if len(args) == 2: 
 		#Perp Bisector of two points A and B
 		kwargs['args_types'] = ["point", "point"]
-		return Line(Midpoint(args[0], args[1]), name["bisectorpoint"] + aux_paren(args), **kwargs)
+		return Line(Midpoint(args[0], args[1]), "bisectorpoint" + aux_paren(args), **kwargs)
 
 	else: 
 		#Perp Bisector of one segment A--B
@@ -178,7 +155,7 @@ def LineBisector(*args, **kwargs):
 			end = "relpoint(%s, 1)" %args[0]
 
 		kwargs['args_types'] = ["point", "point"]
-		return Line(Midpoint(start, end, **kwargs), name["bisectorpoint"] + aux_paren([start, end]), **kwargs)
+		return Line(Midpoint(start, end, **kwargs), "bisectorpoint" + aux_paren([start, end]), **kwargs)
 
 LineBisector.ggb_return_type = "line"
 
@@ -202,11 +179,11 @@ Vector.ggb_return_type = "segment"
 def Length(*args, **kwargs):
 	aux_check_sane(args,1,2)
 	if len(args) == 2: #Two points
-		return aux_get_cmd("Distance", args)
+		return aux_get_cmd("distance", args)
 	elif len(args[0]) == 4 and args[0][1:3] == "--":
-		return aux_get_cmd("Distance", [args[0][0], args[0][-1]])
+		return aux_get_cmd("distance", [args[0][0], args[0][-1]])
 	else: #One segment
-		return aux_get_cmd("length", args)
+		return aux_get_cmd("arclength", args)
 Length.ggb_return_type = "numeric"
 
 def Distance(*args, **kwargs):
@@ -216,10 +193,11 @@ Distance.ggb_return_type = "numeric"
 def Angle(*args, **kwargs):
 	aux_check_sane(args, 3,3)
 	A,B,C = args
-	return "(abs(dot(unit(%s-%s),unit(%s-%s))) < 1/2011) ? %s%s : %s%s " %(A,B,C,B,name["MarkRightAngle"],aux_paren(args),name["MarkAngle"],aux_paren(args))
-#This gives us a more sophisticated angle marker, which makes
-#a right angle mark when the angle is roughly 90 degrees
-#and a generic mark otherwise.
+	return "(abs(dot(unit(%s-%s),unit(%s-%s))) < 1/2011) ? " %(A,B,C,B) + \
+			"rightanglemark(%s,%s,%s) : anglemark(%s,%s,%s)" %(A,B,C,A,B,C) 
+	#This gives us a more sophisticated angle marker, which makes
+	#a right angle mark when the angle is roughly 90 degrees
+	#and a generic mark otherwise.
 Angle.ggb_return_type = "angle"
 
 def Mirror(*args, **kwargs):
@@ -233,12 +211,20 @@ def Mirror(*args, **kwargs):
 		return "2*%s-%s" %(second, first)
 	else:
 		start =	 "relpoint(%s,0.5-10/lisf)" %second
-		end =	 "relpoint(%s,0.5+10/lisf)" %second
-		foot =	 "foot(%s,%s,%s)" %(first, start, end)
+		end   =	 "relpoint(%s,0.5+10/lisf)" %second
+		foot  =	 "foot(%s,%s,%s)" %(first, start, end)
 		return "2*%s-%s" %(foot, first)
 def return_first_type(*args, **kwargs):
 	return kwargs["args_types"][0]
 Mirror.ggb_return_type = return_first_type
+
+def Rotate(*args, **kwargs):
+	aux_check_sane(args, 3, 3)
+	obj, angle, pivot = args
+	return "rotate(%s, %s) * %s" %(str(angle), str(pivot), str(obj))
+Rotate.ggb_return_type = return_first_type
+
+
 		
 
 def Incircle(*args, **kwargs): return aux_get_cmd("incircle", args, 3,3)
