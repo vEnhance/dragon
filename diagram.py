@@ -233,8 +233,8 @@ def drawDiagram(diagram, label_locations = {}, opts = {}, view = None):
 	if CONCISE_MODE == 0:
 		out_asy_code += "/* %s %s \nHomemade Script by v_Enhance. */\n\n" %(SHORT_NAME, VERSION_NUMBER)
 	out_asy_code += """import olympiad; import cse5; size(%(IMG_SIZE)s); real lsf=%(LABEL_SCALE_FACTOR).4f; real lisf=%(LINE_SCALE_FACTOR).1f; defaultpen(fontsize(%(FONT_SIZE)s));"""  %opts
-	if CONCISE_MODE == 1:
-		out_asy_code.replace("; ", "\n") # Add newlines
+	if CONCISE_MODE == 0:
+		out_asy_code = out_asy_code.replace("; ", "; \n") # Add newlines for readability
 
 	if view is not None:
 		out_asy_code += " real xmin=%.2f; real xmax=%.2f; real ymin=%.2f; real ymax=%.2f;" %view
