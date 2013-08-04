@@ -5,7 +5,7 @@ give a list of _dependencies_; that is, a list of variables which are invoked, s
 known later that it should declare these variables for the definition to work."""
 
 import constructs as module_constructs
-from constants import INFIX_OPERATOR_DICT, STRING_TYPE
+from constants import INFIX_OPERATOR_DICT, STRING_TYPE, GOOD_LUCK
 import string
 
 class RPSToken():
@@ -145,7 +145,7 @@ def ShuntingYard(string_tokens, **kwargs):
 				print "FATAL ERROR"
 				print "\"%s\" is neither a recorded GGB command or the name of a previous object." %string_token
 				print "Tokens:", string_tokens
-				print "You are on your own.  Good luck."
+				print GOOD_LUCK
 				exit()
 
 			curr_ggb_type = kwargs['ref_dict'][string_token].ggb_obj_type
@@ -167,7 +167,7 @@ def ShuntingYard(string_tokens, **kwargs):
 			print "FATAL ERROR"
 			print "\"%s\" is not a recognized token." %string_token
 			print "Tokens:", string_tokens
-			print "You are on your own.  Good luck."
+			print GOOD_LUCK
 			exit()
 
 
@@ -190,6 +190,11 @@ def parse_string(s, **kwargs):
 			stack.append(token)
 		elif token.token_type == "function":
 			# Get arguments by pushing from the stack
+			if len(stack) < token.number_args:
+				print "ERROR: Not enough arguments when parsing", s
+				print token_set, stack
+				print GOOD_LUCK
+				exit()
 			args_token = reversed([stack.pop() for t in range(token.number_args)])
 			args_string = []
 			args_types = []

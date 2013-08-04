@@ -15,6 +15,8 @@ CSE_CONCISE_TRANSLATE["CirclebyRadius"] = "CR"
 CSE_CONCISE_TRANSLATE["Line"] = "L"
 CSE_CONCISE_TRANSLATE["Distance"] = "d"
 
+GOOD_LUCK = "You are on your own.  Good luck!"
+
 
 #Things that might occasionally want to be changed
 DICT_ASY_TYPES = {
