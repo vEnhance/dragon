@@ -59,6 +59,7 @@ INFIX_OPERATOR_DICT = {
 		"+" : {"name": "op_plus", "prec": 5},
 		"-" : {"name": "op_minus", "prec": 5},
 		"*" : {"name": "op_times", "prec": 7},
-		"/" : {"name": "op_divide", "prec": 7}
+		"/" : {"name": "op_divide", "prec": 7},
+		"^" : {"name": "op_exp", "prec": 9}
 		}
 

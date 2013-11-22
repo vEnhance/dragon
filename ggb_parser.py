@@ -61,13 +61,13 @@ def get_tokens_from_string(s):
 	cocoon = ""
 	EOF = ";"
 	for char in s + EOF:
-		if char in "()[]+-*/,;":
+		if char in "()[]+-*/^,;":
 			#If queue is nonempty, write it to tokens.
 			if cocoon.strip() != "":
 				tokens.append(cocoon.strip())
 			#If the last thing is a (, check if implicit multiply
 			if len(tokens) > 0:
-				if not isFunc(tokens[-1]) and not (tokens[-1] in "+-*/") and char == "(":
+				if not isFunc(tokens[-1]) and not (tokens[-1] in "+-*/^") and char == "(":
 					tokens.append("*")
 			#Append special char to tokens
 			tokens.append(char)

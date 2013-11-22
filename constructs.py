@@ -29,6 +29,8 @@ def op_times(*args, **kwargs):
 	return aux_op_join("*", ["(%s)" %t for t in args])
 def op_divide(*args, **kwargs):
 	return aux_op_join("/", ["(%s)" %t for t in args])
+def op_exp(*args, **kwargs):
+	return aux_op_join("**", args)
 
 
 #ACTUAL GEOGEBRA FUNCTIONS

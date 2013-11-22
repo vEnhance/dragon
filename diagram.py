@@ -112,14 +112,21 @@ def doCompileDiagramObjects(tree, diagram):
 			#Dependencies may or may not be screwed over now.
 			label = xml_geo_obj.attrib["label"]
 			exp = xml_geo_obj.attrib["exp"]
-			#print "/* Expression %s = %s */" %(label, exp)
-			if exp[0] == exp[-1] == "\"":
-				# This is text.
-				parsedExp = exp
+			if xml_geo_obj.attrib.get("type", "") == "point":
+				x_exp, y_exp = exp[1:-1].split(",") # so (b+c,0) -> b+c and 0
+				x_parse, x_deps = ggb_parser.parse_string(x_exp, num_expected=1, ref_dict = diagram.objectDict)
+				y_parse, y_deps = ggb_parser.parse_string(y_exp, num_expected=1, ref_dict = diagram.objectDict)
+				diagram[label] = GGBObject(label = label, asy_obj_type = "pair", constructor = "(%s, %s)" %(x_parse,y_parse) )
+				deps = x_deps + y_deps
 			else:
-				parsedExp, deps = ggb_parser.parse_string(exp, num_expected=1, ref_dict = diagram.objectDict)
-			diagram[label] = GGBObject(constructor = parsedExp, label=label)
-			diagram[label].depend += 1 #Explicitly defined reals are almost always dependencies; good to be safe here
+				#print "/* Expression %s = %s */" %(label, exp)
+				if exp[0] == exp[-1] == "\"":
+					# This is text.
+					parsedExp = exp
+				else:
+					parsedExp, deps = ggb_parser.parse_string(exp, num_expected=1, ref_dict = diagram.objectDict)
+				diagram[label] = GGBObject(constructor = parsedExp, label=label)
+				diagram[label].depend += 1 #Explicitly defined reals are almost always dependencies; good to be safe here
 			# Add dependencies for expressions too!
 			for label in deps:
 				if diagram.has_key(label):
